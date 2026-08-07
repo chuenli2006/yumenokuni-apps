@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">夢の国グループアプリコレクション</title>
+  
+  <style>
+    /* 🎨 CSS変数：推し活チェキ帳と完全共通のテーマ定義 */
+    :root {
+      --bg-color: #fdfbfb;
+      --card-bg: #ffffff;
+      --primary-pink: #ff85a2;
+      --soft-pink: #ffe6ea;
+      --accent-pink: #f72585;
+      --text-color: #4a4a4a;
+      --light-text: #8d8d8d;
+      --border-color: #f0e6e8;
+      --shadow: 0 4px 15px rgba(255, 133, 162, 0.1);
+      --radius: 16px;
+    }
+
+    /* 🌙 ミッドナイト・ローズ */
+    [data-theme="midnight"] {
+      --bg-color: #121218;
+      --card-bg: #1a1a24;
+      --primary-pink: #ff6b8b;
+      --soft-pink: #2a1f2d;
+      --accent-pink: #ff4081;
+      --text-color: #e2e2e8;
+      --light-text: #9a9aab;
+      --border-color: #2e2e3d;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 🖤 ベルベット・ブラック */
+    [data-theme="velvet"] {
+      --bg-color: #0d0d0d;
+      --card-bg: #171717;
+      --primary-pink: #f72585;
+      --soft-pink: #26101b;
+      --accent-pink: #ff007f;
+      --text-color: #f0f0f0;
+      --light-text: #888888;
+      --border-color: #2a2a2a;
+      --shadow: 0 4px 15px rgba(0,0,0,0.7);
+    }
+
+    /* 🍇 スモーキー・ベリー */
+    [data-theme="berry"] {
+      --bg-color: #181116;
+      --card-bg: #231821;
+      --primary-pink: #d65a8a;
+      --soft-pink: #341f2f;
+      --accent-pink: #ff6097;
+      --text-color: #ebdce4;
+      --light-text: #a38c99;
+      --border-color: #3b2937;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    /* 🌃 サイバー・ネオン */
+    [data-theme="cyber"] {
+      --bg-color: #080914;
+      --card-bg: #0f1123;
+      --primary-pink: #00f0ff;
+      --soft-pink: #181b3d;
+      --accent-pink: #ff0055;
+      --text-color: #e0f7fc;
+      --light-text: #698396;
+      --border-color: #1f2545;
+      --shadow: 0 4px 20px rgba(0, 240, 255, 0.15);
+    }
+
+    /* ☕️ ダーク・モカ */
+    [data-theme="mocha"] {
+      --bg-color: #1c1816;
+      --card-bg: #26211e;
+      --primary-pink: #cf8a72;
+      --soft-pink: #382c28;
+      --accent-pink: #e5987d;
+      --text-color: #ede2dd;
+      --light-text: #9e8e87;
+      --border-color: #3d332e;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 💎 エメラルド・ラグジュアリー */
+    [data-theme="emerald"] {
+      --bg-color: #f7faf9;
+      --card-bg: #ffffff;
+      --primary-pink: #20c997;
+      --soft-pink: #e6fcf5;
+      --accent-pink: #0ca678;
+      --text-color: #2b3a35;
+      --light-text: #829a92;
+      --border-color: #d3f9ed;
+      --shadow: 0 4px 15px rgba(12, 166, 120, 0.08);
+    }
+
+    /* 👑 シャンパン・ゴールド */
+    [data-theme="champagne"] {
+      --bg-color: #fdfbf7;
+      --card-bg: #ffffff;
+      --primary-pink: #d4af37;
+      --soft-pink: #fdf6e2;
+      --accent-pink: #b8860b;
+      --text-color: #3d3522;
+      --light-text: #998c6d;
+      --border-color: #f5e8c4;
+      --shadow: 0 4px 15px rgba(212, 175, 55, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 20px 16px 80px;
+      max-width: 800px;
+      margin: 0 auto;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--soft-pink);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: var(--accent-pink);
+      margin-bottom: 4px;
+    }
+
+    .header-sub {
+      font-size: 0.85rem;
+      color: var(--light-text);
+      margin-bottom: 12px;
+    }
+
+    .header-btn-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--soft-pink);
+      color: var(--accent-pink);
+      border: 1.5px solid var(--primary-pink);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+      outline: none;
+    }
+
+    .pill-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ハブカードグリッド */
+    .hub-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .hub-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hub-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary-pink);
+    }
+
+    .hub-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hub-card-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--accent-pink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hub-badge {
+      font-size: 0.7rem;
+      background: var(--soft-pink);
+      color: var(--accent-pink);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      border: 1px solid var(--primary-pink);
+    }
+
+    .hub-card-desc {
+      font-size: 0.85rem;
+      color: var(--text-color);
+      line-height: 1.5;
+    }
+
+    .hub-card-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    .launch-btn {
+      background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.1s;
+    }
+
+    .launch-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* モーダル共通 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      color: var(--text-color);
+      padding: 20px 16px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 400px;
+      width: 92%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      border: 2px solid var(--soft-pink);
+      position: relative;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h3 {
+      color: var(--accent-pink);
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      text-align: left;
+    }
+
+    .theme-item-btn {
+      padding: 8px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-color);
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .theme-item-btn.active {
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 8px rgba(247, 37, 133, 0.4);
+      background: var(--soft-pink);
+    }
+
+    .close-btn {
+      background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
+      color: white;
+      border: none;
+      padding: 8px 22px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 14px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      width: 100%;
+    }
+
+    details.settings-acc-card {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      text-align: left;
+      overflow: hidden;
+    }
+
+    summary.settings-acc-summary {
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--accent-pink);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    summary.settings-acc-summary::-webkit-details-marker { display: none; }
+
+    .settings-acc-body {
+      padding: 10px 12px 12px;
+      border-top: 1px dashed var(--border-color);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>夢の国グループアプリコレクション</h1>
+    <div class="header-sub">夢の国でのあそびをより充実に。</div>
+    
+    <div class="header-btn-row">
+      <button class="pill-btn" onclick="openSettingsModal()" title="テーマ変更">
+        <span>🎨 カラーテーマ変更</span>
+      </button>
+      <a href="https://github.com/chuenli2006" target="_blank" class="pill-btn" title="GitHubリポジトリ">
+        <span>🐙 GitHub</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="hub-container">
+    <!-- アプリ1: 推し活チェキ帳 -->
+    <div class="hub-card" style="border-left: 6px solid var(--primary-pink);">
+      <div class="hub-card-header">
+        <div class="hub-card-title">💖 推し活ちぇき帳</div>
+        <span class="hub-badge">アイドル・推し活</span>
+      </div>
+      <div class="hub-card-desc">
+        推しメンごとのチェキ撮影枚数やライブ現場履歴、担当カラー、メモ、インスタ風3x3チェキギャラリーをスマートに管理するコレクション図鑑。
+      </div>
+      <div class="hub-card-footer">
+        <a href="https://chuenli2006.github.io/oshi-cheki/" class="launch-btn" target="_blank">
+          アプリを開く ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- アプリ2: 風俗履歴図鑑 -->
+    <div class="hub-card" style="border-left: 6px solid var(--accent-pink);">
+      <div class="hub-card-header">
+        <div class="hub-card-title">🍸 僕の風俗履歴図鑑</div>
+        <span class="hub-badge">風俗</span>
+      </div>
+      <div class="hub-card-desc">
+        お風呂屋さんの訪問履歴や体験レポートをキャスト別でファイリング・整理できることによって、オキニたちとの思い出をよりスタイリッシュに振り返れる自分だけの風俗履歴図鑑Webアプリケーション。
+      </div>
+      <div class="hub-card-footer">
+        <a href="https://chuenli2006.github.io/kosugi-f-zukan.github.io/" class="launch-btn" target="_blank">
+          アプリを開く ↗
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 設定（テーマ変更）モーダル -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <h3>⚙️ ポータル設定</h3>
+      <details class="settings-acc-card" open>
+        <summary class="settings-acc-summary"><span>🎨 カラーテーマの着せ替え</span></summary>
+        <div class="settings-acc-body">
+          <div class="theme-grid">
+            <button class="theme-item-btn" id="btnThemeDefault" onclick="setTheme('default')">🌸 ぴんく</button>
+            <button class="theme-item-btn" id="btnThemeMidnight" onclick="setTheme('midnight')">🌙 だーく</button>
+            <button class="theme-item-btn" id="btnThemeVelvet" onclick="setTheme('velvet')">🖤 ブラック</button>
+            <button class="theme-item-btn" id="btnThemeBerry" onclick="setTheme('berry')">🍇 ベリー</button>
+            <button class="theme-item-btn" id="btnThemeCyber" onclick="setTheme('cyber')">🌃 ネオン</button>
+            <button class="theme-item-btn" id="btnThemeMocha" onclick="setTheme('mocha')">☕️ モカ</button>
+            <button class="theme-item-btn" id="btnThemeEmerald" onclick="setTheme('emerald')">🥗 サラダ</button>
+            <button class="theme-item-btn" id="btnThemeChampagne" onclick="setTheme('champagne')">👑 ゴールド</button>
+          </div>
+        </div>
+      </details>
+      <button class="close-btn" onclick="closeModal('settingsModal')">閉じる</button>
+    </div>
+  </div>
+
+  <script>
+    let currentTheme = localStorage.getItem('hub_theme') || 'default';
+
+    function applyTheme(themeName) {
+      currentTheme = themeName;
+      if (themeName === 'default') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', themeName);
+      }
+      localStorage.setItem('hub_theme', themeName);
+      document.querySelectorAll('.theme-item-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('btnTheme' + themeName.charAt(0).toUpperCase() + themeName.slice(1));
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function setTheme(themeName) { applyTheme(themeName); }
+
+    function openSettingsModal() {
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    // 初期化
+    applyTheme(currentTheme);
+  </script>
+</body>
+</html>
