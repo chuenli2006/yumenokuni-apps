@@ -18,6 +18,10 @@
       --border-color: #f0e6e8;
       --shadow: 0 4px 15px rgba(255, 133, 162, 0.1);
       --radius: 16px;
+      /* Dev版アクセントカラー */
+      --dev-bg: #ff9800;
+      --dev-hover: #e68a00;
+      --dev-light: #fff3e0;
     }
 
     /* 🌙 ミッドナイト・ローズ */
@@ -31,6 +35,7 @@
       --light-text: #9a9aab;
       --border-color: #2e2e3d;
       --shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      --dev-light: #332300;
     }
 
     /* 🖤 ベルベット・ブラック */
@@ -44,6 +49,7 @@
       --light-text: #888888;
       --border-color: #2a2a2a;
       --shadow: 0 4px 15px rgba(0,0,0,0.7);
+      --dev-light: #331f00;
     }
 
     /* 🍇 スモーキー・ベリー */
@@ -57,6 +63,7 @@
       --light-text: #a38c99;
       --border-color: #3b2937;
       --shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      --dev-light: #30200a;
     }
 
     /* 🌃 サイバー・ネオン */
@@ -70,6 +77,7 @@
       --light-text: #698396;
       --border-color: #1f2545;
       --shadow: 0 4px 20px rgba(0, 240, 255, 0.15);
+      --dev-light: #281d00;
     }
 
     /* ☕️ ダーク・モカ */
@@ -83,6 +91,7 @@
       --light-text: #9e8e87;
       --border-color: #3d332e;
       --shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      --dev-light: #332314;
     }
 
     /* 💎 エメラルド・ラグジュアリー */
@@ -96,6 +105,7 @@
       --light-text: #829a92;
       --border-color: #d3f9ed;
       --shadow: 0 4px 15px rgba(12, 166, 120, 0.08);
+      --dev-light: #fff8e6;
     }
 
     /* 👑 シャンパン・ゴールド */
@@ -109,6 +119,7 @@
       --light-text: #998c6d;
       --border-color: #f5e8c4;
       --shadow: 0 4px 15px rgba(212, 175, 55, 0.12);
+      --dev-light: #fff5e0;
     }
 
     * {
@@ -126,6 +137,30 @@
       max-width: 800px;
       margin: 0 auto;
       transition: background-color 0.3s, color 0.3s;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    /* 🎬 フェードイン・アニメーション */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes modalPop {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     header {
@@ -140,6 +175,7 @@
       font-weight: bold;
       color: var(--accent-pink);
       margin-bottom: 4px;
+      transition: color 0.3s;
     }
 
     .header-sub {
@@ -169,8 +205,13 @@
       font-weight: bold;
       cursor: pointer;
       text-decoration: none;
-      transition: transform 0.1s, box-shadow 0.1s;
+      transition: all 0.2s ease;
       outline: none;
+    }
+
+    .pill-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     .pill-btn:active {
@@ -194,14 +235,31 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      transition: transform 0.2s, border-color 0.2s;
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s, box-shadow 0.25s;
       position: relative;
       overflow: hidden;
+      animation: fadeInUp 0.5s ease-out backwards;
+    }
+
+    .hub-card:nth-child(1) { animation-delay: 0.1s; }
+    .hub-card:nth-child(2) { animation-delay: 0.2s; }
+    .hub-card:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .hub-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
       border-color: var(--primary-pink);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
     .hub-card-header {
@@ -229,6 +287,12 @@
       border: 1px solid var(--primary-pink);
     }
 
+    .hub-badge.dev-badge {
+      background: var(--dev-light);
+      color: var(--dev-bg);
+      border-color: var(--dev-bg);
+    }
+
     .hub-card-desc {
       font-size: 0.85rem;
       color: var(--text-color);
@@ -238,7 +302,10 @@
     .hub-card-footer {
       display: flex;
       justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
       margin-top: 4px;
+      flex-wrap: wrap;
     }
 
     .launch-btn {
@@ -254,11 +321,45 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-      transition: transform 0.1s;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+      transition: transform 0.15s, box-shadow 0.15s, filter 0.2s;
+    }
+
+    .launch-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+      filter: brightness(1.05);
     }
 
     .launch-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 🔥 Dev版専用ボタン (アクセントカラーと差別化したオレンジ/アンバー系) */
+    .dev-launch-btn {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s, filter 0.2s;
+    }
+
+    .dev-launch-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(255, 152, 0, 0.45);
+      filter: brightness(1.08);
+    }
+
+    .dev-launch-btn:active {
       transform: scale(0.95);
     }
 
@@ -277,7 +378,7 @@
     .modal-content {
       background: var(--card-bg);
       color: var(--text-color);
-      padding: 20px 16px;
+      padding: 24px 20px;
       border-radius: 20px;
       text-align: center;
       max-width: 400px;
@@ -287,6 +388,7 @@
       position: relative;
       max-height: 85vh;
       overflow-y: auto;
+      animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .modal-content h3 {
@@ -317,6 +419,11 @@
       transition: all 0.2s;
     }
 
+    .theme-item-btn:hover {
+      border-color: var(--primary-pink);
+      transform: translateY(-1px);
+    }
+
     .theme-item-btn.active {
       border-color: var(--accent-pink);
       box-shadow: 0 0 8px rgba(247, 37, 133, 0.4);
@@ -327,7 +434,7 @@
       background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
       color: white;
       border: none;
-      padding: 8px 22px;
+      padding: 10px 22px;
       border-radius: 20px;
       font-weight: bold;
       font-size: 0.9rem;
@@ -335,6 +442,72 @@
       margin-top: 14px;
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
       width: 100%;
+      transition: transform 0.15s;
+    }
+
+    .close-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Devダイアログ専用スタイル */
+    .dev-modal-box {
+      border-color: var(--dev-bg) !important;
+    }
+
+    .dev-modal-box h3 {
+      color: var(--dev-bg) !important;
+    }
+
+    .dev-warning-text {
+      font-size: 0.85rem;
+      text-align: left;
+      background: var(--dev-light);
+      padding: 12px;
+      border-radius: 10px;
+      border-left: 4px solid var(--dev-bg);
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    .dev-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-cancel {
+      background: var(--border-color);
+      color: var(--text-color);
+      border: none;
+      padding: 10px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      flex: 1;
+      transition: background 0.2s;
+    }
+
+    .btn-cancel:hover {
+      filter: brightness(0.95);
+    }
+
+    .btn-confirm-dev {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      flex: 1.2;
+      box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+      transition: transform 0.15s;
+    }
+
+    .btn-confirm-dev:active {
+      transform: scale(0.95);
     }
 
     details.settings-acc-card {
@@ -409,7 +582,28 @@
         お風呂屋さんの訪問履歴や体験レポートをキャスト別でファイリング・整理できることによって、オキニたちとの思い出をよりスタイリッシュに振り返れる自分だけの風俗履歴図鑑Webアプリケーション。
       </div>
       <div class="hub-card-footer">
+        <!-- Dev版アクセスボタン（オレンジ） -->
+        <button class="dev-launch-btn" onclick="openDevConfirmModal('https://chuenli2006.github.io/kosugi-f-zukan.github.io/dev.html')">
+          ⚡ Dev版 ↗
+        </button>
+        <!-- 通常版アクセスボタン -->
         <a href="https://chuenli2006.github.io/kosugi-f-zukan.github.io/" class="launch-btn" target="_blank">
+          アプリを開く ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- アプリ3: 食品・精肉魚介 在庫＆配達管理 -->
+    <div class="hub-card" style="border-left: 6px solid #20c997;">
+      <div class="hub-card-header">
+        <div class="hub-card-title">🥩 食品・精肉魚介 在庫＆配達管理</div>
+        <span class="hub-badge">業務・管理</span>
+      </div>
+      <div class="hub-card-desc">
+        食品・精肉・魚介類の在庫および配達業務を効率的に一元管理。原価・売価・天引き・利益などの自動集計機能に対応した高機能管理システムです。
+      </div>
+      <div class="hub-card-footer">
+        <a href="https://chuenli2006.github.io/yumenokuni-apps/order.html" class="launch-btn" target="_blank">
           アプリを開く ↗
         </a>
       </div>
@@ -439,8 +633,24 @@
     </div>
   </div>
 
+  <!-- Dev版アクセス確認モーダル -->
+  <div class="modal-overlay" id="devConfirmModal">
+    <div class="modal-content dev-modal-box">
+      <h3>⚠️ Dev版（開発版）へのアクセス確認</h3>
+      <div class="dev-warning-text">
+        Dev版では本番環境と同じデータ連携が可能ですが、開発中につきシステムが不安定な場合がございます。<br>
+        <strong>※保存されているデータに対する消失・不具合等の保証は一切ございませんので、あらかじめご了承ください。</strong>
+      </div>
+      <div class="dev-modal-actions">
+        <button class="btn-cancel" onclick="closeModal('devConfirmModal')">キャンセル</button>
+        <button class="btn-confirm-dev" id="btnProceedDev">同意して移動 ↗</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentTheme = localStorage.getItem('hub_theme') || 'default';
+    let pendingDevUrl = '';
 
     function applyTheme(themeName) {
       currentTheme = themeName;
@@ -461,9 +671,28 @@
       document.getElementById('settingsModal').style.display = 'flex';
     }
 
+    function openDevConfirmModal(url) {
+      pendingDevUrl = url;
+      document.getElementById('devConfirmModal').style.display = 'flex';
+    }
+
     function closeModal(id) {
       document.getElementById(id).style.display = 'none';
     }
+
+    document.getElementById('btnProceedDev').addEventListener('click', function() {
+      if (pendingDevUrl) {
+        window.open(pendingDevUrl, '_blank');
+        closeModal('devConfirmModal');
+      }
+    });
+
+    // モーダル背景クリックで閉じる処理
+    window.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal-overlay')) {
+        e.target.style.display = 'none';
+      }
+    });
 
     // 初期化
     applyTheme(currentTheme);
