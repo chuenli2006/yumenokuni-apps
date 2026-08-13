@@ -44,7 +44,7 @@
     .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
     .card-title { font-size: 0.95rem; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-    /* 🥩 カード型表示用グリッドレイアウト */
+    /* 🥩 食品マスター・カードレイアウト */
     .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; width: 100%; }
     .food-card {
       background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius);
@@ -63,7 +63,29 @@
     .detail-value { font-weight: bold; }
     .detail-value.profit { color: var(--success-color); font-size: 0.85rem; }
 
-    .food-card-actions { display: flex; gap: 6px; margin-top: 8px; pt: 8px; border-top: 1px solid var(--border-color); }
+    .food-card-actions { display: flex; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+
+    /* 🚚 配達カードスタイル */
+    .delivery-day-group { margin-bottom: 16px; }
+    .delivery-day-title { font-size: 1rem; font-weight: bold; color: var(--primary-color); border-left: 4px solid var(--primary-color); padding-left: 8px; margin-bottom: 8px; }
+    .delivery-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+    .delivery-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); position: relative; }
+    .delivery-card.completed { border-left: 6px solid var(--success-color); opacity: 0.8; }
+    .delivery-card.scheduled { border-left: 6px solid var(--warning-color); }
+    .delivery-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .delivery-time { font-weight: bold; color: var(--accent-color); font-size: 0.9rem; }
+    .delivery-customer { font-size: 1.05rem; font-weight: bold; margin-bottom: 6px; color: var(--text-color); }
+    .delivery-items-box { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 0.82rem; }
+    .delivery-item-line { display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding: 2px 0; }
+    .delivery-item-line:last-child { border-bottom: none; }
+    .delivery-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; pt: 6px; border-top: 1px solid var(--border-color); }
+
+    /* ⚠️ 自動仕入れ注意・計算アラートボックス */
+    .purchase-alert-card { background: #fff5f5; border: 2px solid #feb2b2; border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+    .purchase-alert-header { font-weight: bold; color: var(--danger-color); font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .purchase-alert-item { background: #ffffff; border: 1px solid #fed7d7; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .purchase-calc-detail { font-size: 0.82rem; }
+    .purchase-money-tag { font-size: 0.9rem; font-weight: bold; color: var(--danger-color); }
 
     .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     @media (min-width: 600px) { .dash-grid { grid-template-columns: repeat(4, 1fr); } }
@@ -112,6 +134,10 @@
 
     <!-- 1. ホーム / ダッシュボード -->
     <div id="tab-home" class="tab-content active">
+      
+      <!-- ⚠️ 在庫不足・仕入れ費用計算アラート -->
+      <div id="homePurchaseAlertArea"></div>
+
       <div class="card">
         <div class="card-title">📊 本日の業務サマリー</div>
         <div class="dash-grid">
@@ -134,41 +160,41 @@
       </div>
     </div>
 
-    <!-- 2. 食品マスター (カード式表示) -->
+    <!-- 2. 食品マスター (カード表示 ＆ バックアップ機能) -->
     <div id="tab-stock" class="tab-content">
+      
+      <!-- バックアップ & 復元ツールバー -->
+      <div class="card" style="background:var(--soft-primary); margin-bottom:12px; padding:10px 14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span style="font-size:0.82rem; font-weight:bold; color:var(--primary-color);">💾 データバックアップ & 復元</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-sm btn-success" onclick="exportDataJSON()">💾 バックアップ(JSON)</button>
+            <button class="btn btn-sm btn-secondary" onclick="triggerImportFile()">📂 復元(JSON)</button>
+            <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importDataJSON(event)">
+          </div>
+        </div>
+      </div>
+
       <div class="card" style="border:none; background:transparent; box-shadow:none; padding:0;">
         <div class="card-title" style="padding:0 4px 10px;">
           <span>🥩 食品マスター・カード一覧</span>
           <button class="btn btn-sm" onclick="openModal('modalProduct')">＋ 新規食品登録</button>
         </div>
         
-        <!-- カード配置コンテナ -->
         <div class="product-grid" id="productGridContainer"></div>
       </div>
     </div>
 
-    <!-- 3. 配達管理タブ -->
+    <!-- 3. 配達管理タブ (日別カード表示) -->
     <div id="tab-delivery" class="tab-content">
       <div class="card">
         <div class="card-title">
-          <span>🚚 配達・徴収管理</span>
+          <span>🚚 配達・徴収スケジュール (日別カード表示)</span>
           <button class="btn btn-sm" onclick="openModal('modalDelivery')">＋ 配達予定を作成</button>
         </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>配達日時</th>
-                <th>納品先 (宛先)</th>
-                <th>注文商品・数量</th>
-                <th>徴収金額</th>
-                <th>ステータス</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody id="deliveryTableBody"></tbody>
-          </table>
-        </div>
+        
+        <!-- 配達カード型グループコンテナ -->
+        <div id="deliveryCardsContainer"></div>
       </div>
     </div>
 
@@ -186,6 +212,7 @@
                 <th>入荷予定日</th>
                 <th>仕入れ商品</th>
                 <th>発注量(KG)</th>
+                <th>仕入れ概算費用</th>
                 <th>ステータス</th>
                 <th>操作</th>
               </tr>
@@ -216,7 +243,7 @@
     </nav>
   </div>
 
-  <!-- モーダル: 商品追加・編集モーダル -->
+  <!-- モーダル: 商品登録・編集 -->
   <div class="modal-overlay" id="modalProduct">
     <div class="modal-content">
       <h3 id="modalProductTitle">🥩 食品マスターの編集</h3>
@@ -304,7 +331,7 @@
   </div>
 
   <script>
-    // --- 初期データ (フォーマット対応) ---
+    // --- 初期データ ---
     let products = JSON.parse(localStorage.getItem('food_products')) || [
       { id: 'P-1', name: '焼肉和牛', stock: 15.0, costKg: 7600, costSingle: 3800, priceKg: 18000, specialPrice: '', deduction: 2000, profit: 8400 },
       { id: 'P-2', name: '焼肉豚肉', stock: 20.0, costKg: 1250, costSingle: 3500, priceKg: 10000, specialPrice: '', deduction: 2000, profit: 4500 },
@@ -341,7 +368,6 @@
     function openModal(id, prodId = null) {
       if (id === 'modalProduct') {
         if (prodId) {
-          // 既存商品の編集
           const p = products.find(item => item.id === prodId);
           if (p) {
             document.getElementById('modalProductTitle').innerText = '✏️ 食品マスターの編集';
@@ -356,7 +382,6 @@
             calcProfitPreview();
           }
         } else {
-          // 新規登録
           document.getElementById('modalProductTitle').innerText = '🥩 食品の新規登録';
           document.getElementById('pId').value = '';
           document.getElementById('pName').value = '';
@@ -385,12 +410,111 @@
       document.getElementById('pProfitCalc').value = '¥' + profit.toLocaleString();
     }
 
-    // --- 画面描画 (カード表示対応) ---
+    // --- 在庫不足 ＆ 必要仕入れ費用計算ロジック ---
+    function checkStockOverrun() {
+      const shortageResults = [];
+      
+      products.forEach(p => {
+        // 現在の「配達予定（未完了）」の必要合計KG数を算出
+        const reservedQty = deliveries
+          .filter(d => d.status === 'scheduled')
+          .reduce((sum, d) => {
+            const item = d.items.find(i => i.prodId === p.id);
+            return sum + (item ? Number(item.qty) : 0);
+          }, 0);
+
+        // 発注済み（未入荷）の合計数量
+        const incomingQty = purchases
+          .filter(pur => pur.status === 'ordered' && pur.prodId === p.id)
+          .reduce((sum, pur) => sum + Number(pur.qty), 0);
+
+        const netStock = p.stock + incomingQty - reservedQty;
+
+        if (netStock < 0) {
+          const neededQty = Math.abs(netStock);
+          const estimatedCost = neededQty * p.costKg;
+          shortageResults.push({
+            product: p,
+            currentStock: p.stock,
+            reservedQty: reservedQty,
+            incomingQty: incomingQty,
+            neededQty: neededQty,
+            estimatedCost: estimatedCost
+          });
+        }
+      });
+
+      return shortageResults;
+    }
+
+    // --- 画面描画 ---
     function renderAll() {
       renderDashboard();
       renderStockCards();
-      renderDeliveryTable();
+      renderDeliveryCards();
       renderPurchaseTable();
+    }
+
+    function renderDashboard() {
+      // 1. 在庫超過アラート（ホームページへ表示）
+      const overruns = checkStockOverrun();
+      const alertContainer = document.getElementById('homePurchaseAlertArea');
+
+      if (overruns.length > 0) {
+        alertContainer.innerHTML = `
+          <div class="purchase-alert-card">
+            <div class="purchase-alert-header">
+              <span>⚠️ 配達必要量が在庫を超過しています！仕入れが必要です</span>
+            </div>
+            ${overruns.map(item => `
+              <div class="purchase-alert-item">
+                <div>
+                  <strong style="font-size:0.95rem; color:var(--primary-color);">${item.product.name}</strong>
+                  <div class="purchase-calc-detail" style="color:var(--light-text); margin-top:2px;">
+                    現在庫: ${item.currentStock}KG / 配達予定: ${item.reservedQty}KG / 入荷予定: ${item.incomingQty}KG
+                  </div>
+                  <div style="font-size:0.85rem; margin-top:2px;">
+                    👉 不足分: <strong style="color:var(--danger-color);">${item.neededQty} KG</strong>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="purchase-money-tag">仕入れ概算: ¥${item.estimatedCost.toLocaleString()}</div>
+                  <button class="btn btn-sm btn-danger" style="margin-top:4px;" onclick="quickPurchase('${item.product.id}', ${item.neededQty})">
+                    ${item.neededQty}KGを発注登録
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        alertContainer.innerHTML = '';
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayDeliveries = deliveries.filter(d => d.date === todayStr);
+      const uncollectedAmount = deliveries.filter(d => !d.isCollected).reduce((sum, d) => sum + Number(d.amount), 0);
+
+      document.getElementById('dashTodayDelivery').innerText = todayDeliveries.length + '件';
+      document.getElementById('dashUncollected').innerText = '¥' + uncollectedAmount.toLocaleString();
+      document.getElementById('dashShortageItems').innerText = overruns.length + '品目';
+      document.getElementById('dashPendingPurchases').innerText = purchases.filter(p => p.status === 'ordered').length + '件';
+
+      document.getElementById('homeRecentDeliveries').innerHTML = deliveries.slice(0, 3).map(d => `
+        <div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:0.8rem;">
+          <div><strong>${d.date} ${d.time||''}</strong> - ${d.customer}</div>
+          <div style="color:var(--light-text);">徴収予定: ¥${Number(d.amount).toLocaleString()} (${d.isCollected?'徴収済':'未徴収'})</div>
+        </div>
+      `).join('') || '<div style="font-size:0.8rem; color:var(--light-text);">配達予定はありません</div>';
+
+      document.getElementById('homeRecentPurchases').innerHTML = purchases.slice(0, 3).map(p => {
+        const prod = products.find(prd => prd.id === p.prodId);
+        return `
+          <div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:0.8rem;">
+            <div><strong>${p.date}</strong> - ${prod ? prod.name : ''} (${p.qty} KG)</div>
+            <div>状態: ${p.status === 'ordered' ? '<span class="badge badge-danger">入荷待ち</span>' : '<span class="badge badge-success">入荷済</span>'}</div>
+          </div>`;
+      }).join('') || '<div style="font-size:0.8rem; color:var(--light-text);">仕入れ予定はありません</div>';
     }
 
     function renderStockCards() {
@@ -448,59 +572,82 @@
       }).join('');
     }
 
-    function renderDashboard() {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todayDeliveries = deliveries.filter(d => d.date === todayStr);
-      const uncollectedAmount = deliveries.filter(d => !d.isCollected).reduce((sum, d) => sum + Number(d.amount), 0);
-      const shortageCount = products.filter(p => p.stock <= 5.0).length;
+    // --- 配達ページの「日別・カード型」描画 ---
+    function renderDeliveryCards() {
+      const container = document.getElementById('deliveryCardsContainer');
+      if (!container) return;
 
-      document.getElementById('dashTodayDelivery').innerText = todayDeliveries.length + '件';
-      document.getElementById('dashUncollected').innerText = '¥' + uncollectedAmount.toLocaleString();
-      document.getElementById('dashShortageItems').innerText = shortageCount + '品目';
-      document.getElementById('dashPendingPurchases').innerText = purchases.filter(p => p.status === 'ordered').length + '件';
+      if (deliveries.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--light-text); font-size:0.85rem;">配達予定が登録されていません</div>';
+        return;
+      }
 
-      document.getElementById('homeRecentDeliveries').innerHTML = deliveries.slice(0, 3).map(d => `
-        <div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:0.8rem;">
-          <div><strong>${d.date} ${d.time||''}</strong> - ${d.customer}</div>
-          <div style="color:var(--light-text);">徴収予定: ¥${Number(d.amount).toLocaleString()} (${d.isCollected?'徴収済':'未徴収'})</div>
-        </div>
-      `).join('') || '<div style="font-size:0.8rem; color:var(--light-text);">配達予定はありません</div>';
+      // 日付ごとにグループ分け
+      const groups = {};
+      deliveries.forEach(d => {
+        if (!groups[d.date]) groups[d.date] = [];
+        groups[d.date].push(d);
+      });
 
-      document.getElementById('homeRecentPurchases').innerHTML = purchases.slice(0, 3).map(p => {
-        const prod = products.find(prd => prd.id === p.prodId);
+      // 日付の降順（近い順）にソート
+      const sortedDates = Object.keys(groups).sort();
+
+      container.innerHTML = sortedDates.map(date => {
+        const dayDeliveries = groups[date];
+
+        const cardsHtml = dayDeliveries.map(d => {
+          const itemsLinesHtml = d.items.map(i => {
+            const prd = products.find(p => p.id === i.prodId);
+            return `
+              <div class="delivery-item-line">
+                <span>🥩 ${prd ? prd.name : '不明品'}</span>
+                <strong>${i.qty} KG</strong>
+              </div>`;
+          }).join('');
+
+          return `
+            <div class="delivery-card ${d.status}">
+              <div class="delivery-card-header">
+                <span class="delivery-time">⏰ ${d.time || '時間未定'}</span>
+                ${d.status === 'completed' ? '<span class="badge badge-success">配達完了</span>' : '<span class="badge badge-warning">未配達</span>'}
+              </div>
+
+              <div class="delivery-customer">${d.customer}</div>
+
+              <div class="delivery-items-box">
+                <div style="font-size:0.7rem; color:var(--light-text); margin-bottom:4px; font-weight:bold;">【配送商品内容】</div>
+                ${itemsLinesHtml}
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; margin-bottom:8px;">
+                <span style="color:var(--light-text);">徴収代金:</span>
+                <strong style="color:var(--primary-color); font-size:0.95rem;">¥${Number(d.amount).toLocaleString()}</strong>
+              </div>
+
+              <div class="delivery-card-footer">
+                <button class="btn btn-sm ${d.isCollected ? 'btn-success' : 'btn-secondary'}" onclick="toggleCollected('${d.id}')">
+                  ${d.isCollected ? '✓ 代金徴収済' : '未徴収 (変更)'}
+                </button>
+
+                <div style="display:flex; gap:4px;">
+                  ${d.status === 'scheduled' 
+                    ? `<button class="btn btn-sm btn-success" onclick="completeDelivery('${d.id}')">配達完了にする</button>` 
+                    : ''}
+                  <button class="btn btn-sm btn-danger" onclick="deleteDelivery('${d.id}')">削除</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
         return `
-          <div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:0.8rem;">
-            <div><strong>${p.date}</strong> - ${prod ? prod.name : ''} (${p.qty} KG)</div>
-            <div>状態: ${p.status === 'ordered' ? '<span class="badge badge-danger">入荷待ち</span>' : '<span class="badge badge-success">入荷済</span>'}</div>
-          </div>`;
-      }).join('') || '<div style="font-size:0.8rem; color:var(--light-text);">仕入れ予定はありません</div>';
-    }
-
-    function renderDeliveryTable() {
-      const tbody = document.getElementById('deliveryTableBody');
-      tbody.innerHTML = deliveries.map(d => {
-        const itemSummary = d.items.map(i => {
-          const prd = products.find(p => p.id === i.prodId);
-          return `${prd ? prd.name : ''} × ${i.qty}KG`;
-        }).join(', ');
-
-        return `
-          <tr>
-            <td>${d.date} ${d.time||''}</td>
-            <td class="text-left"><strong>${d.customer}</strong></td>
-            <td class="text-left">${itemSummary}</td>
-            <td>¥${Number(d.amount).toLocaleString()}<br>
-              <button class="btn btn-sm ${d.isCollected ? 'btn-success' : ''}" onclick="toggleCollected('${d.id}')">
-                ${d.isCollected ? '徴収済み' : '未徴収 (タップで変更)'}
-              </button>
-            </td>
-            <td>
-              ${d.status === 'scheduled' 
-                ? `<button class="btn btn-sm btn-success" onclick="completeDelivery('${d.id}')">配達完了にする</button>` 
-                : '<span class="badge badge-success">配達完了</span>'}
-            </td>
-            <td><button class="btn btn-sm btn-danger" onclick="deleteDelivery('${d.id}')">削除</button></td>
-          </tr>`;
+          <div class="delivery-day-group">
+            <div class="delivery-day-title">📅 ${date} の配達予定 (${dayDeliveries.length}件)</div>
+            <div class="delivery-card-grid">
+              ${cardsHtml}
+            </div>
+          </div>
+        `;
       }).join('');
     }
 
@@ -508,11 +655,14 @@
       const tbody = document.getElementById('purchaseTableBody');
       tbody.innerHTML = purchases.map(p => {
         const prod = products.find(prd => prd.id === p.prodId);
+        const estimatedPurchaseCost = prod ? (p.qty * prod.costKg) : 0;
+
         return `
           <tr>
             <td>${p.date}</td>
             <td class="text-left">${prod ? prod.name : '不明な商品'}</td>
             <td>${p.qty} KG</td>
+            <td>¥${estimatedPurchaseCost.toLocaleString()}</td>
             <td>${p.status === 'ordered' ? '<span class="badge badge-danger">入荷待ち</span>' : '<span class="badge badge-success">入荷完了</span>'}</td>
             <td>
               ${p.status === 'ordered' 
@@ -523,7 +673,7 @@
       }).join('');
     }
 
-    // --- ロジック処理 (新規保存・更新の共通化) ---
+    // --- ロジック処理 ---
     function saveProduct(e) {
       e.preventDefault();
       const pId = document.getElementById('pId').value;
@@ -532,7 +682,6 @@
       const ded = Number(document.getElementById('pDeduction').value) || 0;
 
       if (pId) {
-        // 既存商品の更新（編集）
         const p = products.find(item => item.id === pId);
         if (p) {
           p.name = document.getElementById('pName').value;
@@ -545,7 +694,6 @@
           p.profit = pKg - cKg - ded;
         }
       } else {
-        // 新規商品の登録
         products.push({
           id: 'P-' + Date.now(),
           name: document.getElementById('pName').value,
@@ -673,6 +821,19 @@
       closeModal('modalPurchase');
     }
 
+    function quickPurchase(prodId, qty) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      purchases.push({
+        id: 'PUR-' + Date.now(),
+        date: todayStr,
+        prodId: prodId,
+        qty: qty,
+        status: 'ordered'
+      });
+      saveData();
+      alert(`不足分 ${qty} KGの仕入れ発注を登録しました！`);
+    }
+
     function receivePurchase(id) {
       const pur = purchases.find(p => p.id === id);
       if (!pur || pur.status === 'received') return;
@@ -684,6 +845,52 @@
       pur.status = 'received';
       saveData();
       alert(`入荷完了！「${prod ? prod.name : ''}」の在庫に +${pur.qty} KGを加算しました。`);
+    }
+
+    // --- バックアップ & 復元ロジック ---
+    function exportDataJSON() {
+      const exportObject = {
+        products,
+        deliveries,
+        purchases,
+        exportedAt: new Date().toISOString()
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObject, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `食品在庫管理バックアップ_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function triggerImportFile() {
+      document.getElementById('jsonFileInput').click();
+    }
+
+    function importDataJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.products && imported.deliveries && imported.purchases) {
+            products = imported.products;
+            deliveries = imported.deliveries;
+            purchases = imported.purchases;
+            saveData();
+            alert("✨ データの復元が完了しました！");
+          } else {
+            alert("⚠️ バックアップファイルの形式が正しくありません。");
+          }
+        } catch (err) {
+          alert("⚠️ ファイルの読み込みに失敗しました。");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
     }
 
     function renderReportChart() {
@@ -710,7 +917,7 @@
       });
     }
 
-    // 初期化設定
+    // 初期化
     document.getElementById('dDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('purDate').value = new Date().toISOString().split('T')[0];
     renderAll();
