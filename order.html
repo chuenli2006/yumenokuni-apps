@@ -3,607 +3,717 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ぽちぽち配達＆在庫管理アプリ</title>
+  <title>食品・精肉魚介 業務用在庫配達管理</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  
   <style>
     :root {
-      --primary: #2563eb;
-      --danger: #ef4444;
-      --success: #10b981;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --text: #1e293b;
+      --bg-color: #f4f6f8; --card-bg: #ffffff; --primary-color: #2c5282; --soft-primary: #ebf8ff;
+      --accent-color: #3182ce; --text-color: #2d3748; --light-text: #718096; --border-color: #e2e8f0;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.05); --radius: 12px;
+      --danger-color: #e53e3e; --warning-color: #dd6b20; --success-color: #38a169;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; overflow-x: hidden; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding-bottom: 80px; /* ナビバー用の余白 */
+    .app-layout { display: flex; flex-direction: column; padding: 16px 12px 100px; max-width: 1200px; margin: 0 auto; }
+    
+    header { text-align: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-color); width: 100%; }
+    header h1 { font-size: 1.4rem; font-weight: bold; color: var(--primary-color); }
+    .header-sub { font-size: 0.8rem; color: var(--light-text); }
+
+    .floating-nav {
+      position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      padding: 6px 10px; border-radius: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: flex; gap: 4px; z-index: 100; width: 95%; max-width: 500px; justify-content: space-around;
     }
-
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 16px;
+    .nav-item {
+      background: none; border: none; font-size: 0.7rem; font-weight: bold;
+      color: var(--light-text); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 6px 12px; border-radius: 20px; transition: all 0.2s; flex: 1;
     }
+    .nav-item.active { color: white; background: var(--primary-color); }
+    .nav-icon { font-size: 1.1rem; }
 
-    h2 { font-size: 1.2rem; margin-top: 0; margin-bottom: 12px; }
-    h4 { margin: 0 0 10px 0; font-size: 1rem; }
-
-    .card {
-      background: var(--card-bg);
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      border: 1px solid var(--border);
-    }
-
-    /* ボタンデザイン */
-    button {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #f1f5f9;
-      color: var(--text);
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-    }
-
-    .btn-add {
-      background: var(--primary);
-      color: #fff;
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      border: none;
-      margin-top: 12px;
-    }
-
-    .btn-complete {
-      background: var(--success);
-      color: #fff;
-      width: 100%;
-      padding: 10px;
-      border: none;
-      margin-top: 10px;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: #fff;
-      border: none;
-      padding: 4px 8px;
-      font-size: 0.8rem;
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-    }
-
-    /* 数量変更ボタン群 */
-    .qty-control {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .qty-btn-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .qty-val {
-      min-width: 50px;
-      text-align: right;
-      font-weight: bold;
-    }
-
-    /* 入力フォーム */
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-
-    .flex-inputs {
-      display: flex;
-      gap: 8px;
-    }
-
-    /* タブ切替 */
-    .tab-content { display: none; }
+    .tab-content { display: none; width: 100%; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .tab-content.active { display: block; }
 
-    /* 下部ナビバー */
-    .navbar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 65px;
-      background: #ffffff;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-      z-index: 100;
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .card-title { font-size: 0.95rem; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* 🥩 カード型表示用グリッドレイアウト */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; width: 100%; }
+    .food-card {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius);
+      padding: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; transition: transform 0.2s, box-shadow 0.2s;
     }
+    .food-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    .food-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; }
+    .food-title { font-size: 1.05rem; font-weight: bold; color: var(--primary-color); }
+    .food-stock { font-size: 0.85rem; font-weight: bold; background: var(--soft-primary); padding: 2px 8px; border-radius: 12px; color: var(--accent-color); }
+    .food-stock.low { background: #fed7d7; color: var(--danger-color); }
 
-    .nav-item {
-      border: none;
-      background: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #64748b;
-      font-size: 0.75rem;
-      padding: 0;
-    }
+    .food-details { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.78rem; margin-bottom: 10px; }
+    .detail-item { background: #f8fafc; padding: 4px 6px; border-radius: 4px; }
+    .detail-label { color: var(--light-text); font-size: 0.7rem; display: block; }
+    .detail-value { font-weight: bold; }
+    .detail-value.profit { color: var(--success-color); font-size: 0.85rem; }
 
-    .nav-item.active {
-      color: var(--primary);
-      font-weight: bold;
-    }
+    .food-card-actions { display: flex; gap: 6px; margin-top: 8px; pt: 8px; border-top: 1px solid var(--border-color); }
 
-    .nav-icon { font-size: 1.3rem; }
+    .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 600px) { .dash-grid { grid-template-columns: repeat(4, 1fr); } }
+    .dash-item { background: var(--soft-primary); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); }
+    .dash-val { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); }
+    .dash-lbl { font-size: 0.72rem; color: var(--light-text); }
 
-    /* 設定一覧リスト */
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
+    .btn { background: var(--primary-color); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+    .btn-sm { padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; }
+    .btn-secondary { background: #718096; }
+    .btn-danger { background: var(--danger-color); }
+    .btn-success { background: var(--success-color); }
 
-    .tag-item {
-      background: #f1f5f9;
-      padding: 6px 10px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.9rem;
+    .table-wrapper { overflow-x: auto; width: 100%; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 8px; white-space: nowrap; }
+    th, td { border: 1px solid var(--border-color); padding: 8px 6px; text-align: right; }
+    th { background: var(--soft-primary); color: var(--primary-color); font-weight: bold; text-align: center; }
+    td.text-left { text-align: left; }
+
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+    .badge-danger { background: #fed7d7; color: var(--danger-color); }
+    .badge-success { background: #c6f6d5; color: var(--success-color); }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: var(--card-bg); padding: 20px; border-radius: 12px; max-width: 550px; width: 92%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; text-align: left; }
+    .form-group label { font-size: 0.78rem; font-weight: bold; color: var(--light-text); }
+    .form-group input, .form-group select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); }
+
+    .item-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+
+    @media (min-width: 768px) {
+      .app-layout { padding: 24px; }
+      .dash-charts-row { display: flex; gap: 16px; }
+      .dash-charts-row > div { flex: 1; }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
+  <div class="app-layout">
+    <header>
+      <h1>食品・精肉魚介 在庫＆配達管理</h1>
+      <div class="header-sub">原価・売価・天引き・利益の自動集計対応システム</div>
+    </header>
 
-  <!-- 1. ホーム画面 -->
-  <section id="home" class="tab-content active">
-    <h2>🏠 ホーム</h2>
-    
-    <div class="card">
-      <h4>🚚 本日の配達件数</h4>
-      <p style="font-size: 1.8rem; margin: 5px 0; font-weight: bold; color: var(--primary);" id="home-delivery-count">0 件</p>
-    </div>
-
-    <div class="card">
-      <h4>📦 現在の在庫一覧</h4>
-      <div id="home-stock-summary">データがありません</div>
-    </div>
-  </section>
-
-  <!-- 2. 配達管理画面 -->
-  <section id="delivery" class="tab-content">
-    <h2>🚚 配達管理</h2>
-
-    <!-- ぽちぽち注文作成カード -->
-    <div class="card">
-      <h4>新規注文（ぽちぽち作成）</h4>
-      
-      <!-- 配達場所の動的選択ボタン -->
-      <div style="margin-bottom: 12px;">
-        <label style="font-size: 0.85rem; color: #64748b; display: block; margin-bottom: 4px;">1. 配達場所を選択</label>
-        <div id="location-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-      </div>
-
-      <!-- 食材の数量設定 -->
-      <div>
-        <label style="font-size: 0.85rem; color: #64748b; display: block; margin-bottom: 4px;">2. 数量を指定</label>
-        <div id="product-selectors"></div>
-      </div>
-
-      <button class="btn-add" onclick="addNewOrder()">注文を登録する</button>
-    </div>
-
-    <!-- 登録済み注文一覧 -->
-    <h4>現在の配達リスト</h4>
-    <div id="order-list"></div>
-  </section>
-
-  <!-- 3. 在庫管理画面 -->
-  <section id="stock" class="tab-content">
-    <h2>📦 在庫・仕入れ管理</h2>
-
-    <div class="card">
-      <h4>在庫の直接修正・仕入れ手入力</h4>
-      <div class="flex-inputs">
-        <select id="stock-select-item" style="flex:1; padding:8px; border-radius:6px; border:1px solid var(--border);"></select>
-        <input type="number" id="stock-input-qty" placeholder="数量(g)" style="width: 110px; margin-bottom:0;">
-        <button onclick="updateStockDirect()" class="btn-sm">設定</button>
-      </div>
-    </div>
-
-    <div id="stock-list"></div>
-  </section>
-
-  <!-- 4. 設定画面 -->
-  <section id="settings" class="tab-content">
-    <h2>⚙️ 設定（商品・場所の管理）</h2>
-
-    <!-- 配達場所の管理 -->
-    <div class="card">
-      <h4>📍 配達場所の追加・削除</h4>
-      <div class="flex-inputs">
-        <input type="text" id="new-location-input" placeholder="例: E, 店舗B, 山田様" style="margin-bottom:0;">
-        <button onclick="addLocation()" class="btn-sm">追加</button>
-      </div>
-      <div class="tag-list" id="location-tag-list"></div>
-    </div>
-
-    <!-- 商品マスターの管理 -->
-    <div class="card">
-      <h4>🥩 取扱商品の追加・削除</h4>
-      <div class="flex-inputs">
-        <input type="text" id="new-product-input" placeholder="例: サーモン, 豚ロース" style="margin-bottom:0;">
-        <button onclick="addProduct()" class="btn-sm">追加</button>
-      </div>
-      <div class="tag-list" id="product-tag-list"></div>
-    </div>
-  </section>
-
-</div>
-
-<!-- 下部ナビゲーション -->
-<nav class="navbar">
-  <button class="nav-item active" onclick="switchTab('home', this)">
-    <span class="nav-icon">🏠</span>
-    <span>ホーム</span>
-  </button>
-  <button class="nav-item" onclick="switchTab('delivery', this)">
-    <span class="nav-icon">🚚</span>
-    <span>配達</span>
-  </button>
-  <button class="nav-item" onclick="switchTab('stock', this)">
-    <span class="nav-icon">📦</span>
-    <span>在庫</span>
-  </button>
-  <button class="nav-item" onclick="switchTab('settings', this)">
-    <span class="nav-icon">⚙️</span>
-    <span>設定</span>
-  </button>
-</nav>
-
-<script>
-  // 初期データ（データ保持用のキー: app_data）
-  let state = {
-    locations: ['A', 'B', 'E'],
-    products: ['牛肉', '豚肉', 'エビ', 'カキ', 'ホタテ'],
-    stock: { '牛肉': 2000, '豚肉': 1000, 'エビ': 0, 'カキ': 500, 'ホタテ': 500 },
-    orders: []
-  };
-
-  // 注文作成中の選択状態
-  let selectedLocation = 'A';
-  let selectedItems = {};
-
-  // アプリ起動時の初期化
-  function init() {
-    loadData();
-    resetOrderSelection();
-    renderAll();
-  }
-
-  // LocalStorageからデータ読み込み
-  function loadData() {
-    const saved = localStorage.getItem('app_data');
-    if (saved) {
-      try {
-        state = JSON.parse(saved);
-      } catch (e) { console.error('保存データの読み込みエラー', e); }
-    }
-  }
-
-  // LocalStorageへデータ保存
-  function saveData() {
-    localStorage.setItem('app_data', JSON.stringify(state));
-  }
-
-  // 注文追加用の一時データをリセット
-  function resetOrderSelection() {
-    if (state.locations.length > 0) {
-      selectedLocation = state.locations[0];
-    }
-    selectedItems = {};
-    state.products.forEach(p => {
-      selectedItems[p] = 0;
-    });
-  }
-
-  // 全画面のUI描画更新
-  function renderAll() {
-    renderHome();
-    renderDeliveryBuilder();
-    renderDeliveryList();
-    renderStock();
-    renderSettings();
-  }
-
-  /* --- 1. ホーム画面の描画 --- */
-  function renderHome() {
-    document.getElementById('home-delivery-count').innerText = `${state.orders.length} 件`;
-    
-    const summaryEl = document.getElementById('home-stock-summary');
-    if (state.products.length === 0) {
-      summaryEl.innerHTML = '<p style="color:#64748b;">商品が登録されていません</p>';
-      return;
-    }
-
-    let html = '<ul style="padding-left:20px; margin:0;">';
-    state.products.forEach(p => {
-      const qty = state.stock[p] || 0;
-      const isShort = qty <= 0;
-      html += `<li style="margin-bottom:4px;">
-        ${p}: <strong>${qty} g</strong> 
-        ${isShort ? '<span style="color:var(--danger); font-size:0.8rem;">(在庫不足)</span>' : ''}
-      </li>`;
-    });
-    html += '</ul>';
-    summaryEl.innerHTML = html;
-  }
-
-  /* --- 2. 配達画面の描画 --- */
-  function renderDeliveryBuilder() {
-    // 場所選択ボタン
-    const locBox = document.getElementById('location-buttons');
-    locBox.innerHTML = state.locations.map(loc => `
-      <button class="${selectedLocation === loc ? 'active' : ''}" 
-              onclick="selectLocation('${loc}')">${loc}</button>
-    `).join('');
-
-    // 商品数量変更用リスト
-    const prodBox = document.getElementById('product-selectors');
-    prodBox.innerHTML = state.products.map(p => {
-      const currentVal = selectedItems[p] || 0;
-      return `
-        <div class="qty-control">
-          <span>${p}</span>
-          <div class="qty-btn-group">
-            <button onclick="changeQty('${p}', -500)">-500g</button>
-            <button onclick="changeQty('${p}', -100)">-100g</button>
-            <span class="qty-val">${currentVal}g</span>
-            <button onclick="changeQty('${p}', 100)">+100g</button>
-            <button onclick="changeQty('${p}', 500)">+500g</button>
-          </div>
+    <!-- 1. ホーム / ダッシュボード -->
+    <div id="tab-home" class="tab-content active">
+      <div class="card">
+        <div class="card-title">📊 本日の業務サマリー</div>
+        <div class="dash-grid">
+          <div class="dash-item"><div class="dash-val" id="dashTodayDelivery">0件</div><div class="dash-lbl">本日配送予定</div></div>
+          <div class="dash-item"><div class="dash-val" id="dashUncollected">¥0</div><div class="dash-lbl">未徴収金額</div></div>
+          <div class="dash-item"><div class="dash-val" id="dashShortageItems">0品目</div><div class="dash-lbl">在庫切れ注意</div></div>
+          <div class="dash-item"><div class="dash-val" id="dashPendingPurchases">0件</div><div class="dash-lbl">入荷待ち仕入れ</div></div>
         </div>
-      `;
-    }).join('');
-  }
+      </div>
 
-  function selectLocation(loc) {
-    selectedLocation = loc;
-    renderDeliveryBuilder();
-  }
-
-  function changeQty(product, amount) {
-    const current = selectedItems[product] || 0;
-    selectedItems[product] = Math.max(0, current + amount);
-    renderDeliveryBuilder();
-  }
-
-  function addNewOrder() {
-    if (!selectedLocation) {
-      alert('配達場所を選択してください');
-      return;
-    }
-
-    // 1つでも数量が入っているかチェック
-    const hasItems = Object.values(selectedItems).some(val => val > 0);
-    if (!hasItems) {
-      alert('数量を1つ以上指定してください');
-      return;
-    }
-
-    // 注文オブジェクト作成
-    const newOrder = {
-      id: Date.now(),
-      location: selectedLocation,
-      items: { ...selectedItems }
-    };
-
-    state.orders.push(newOrder);
-    saveData();
-    resetOrderSelection();
-    renderAll();
-    alert('注文を追加しました！');
-  }
-
-  function renderDeliveryList() {
-    const listEl = document.getElementById('order-list');
-    if (state.orders.length === 0) {
-      listEl.innerHTML = '<p style="color:#64748b;">配達予定の注文はありません。</p>';
-      return;
-    }
-
-    listEl.innerHTML = state.orders.map(order => {
-      // 数量が1以上の商品のみ抽出
-      const itemDetails = Object.keys(order.items)
-        .filter(p => order.items[p] > 0)
-        .map(p => `<li>${p}: <strong>${order.items[p]} g</strong></li>`)
-        .join('');
-
-      return `
+      <div class="dash-charts-row">
         <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <strong style="font-size:1.1rem;">📍 場所: ${order.location}</strong>
-          </div>
-          <ul style="padding-left:20px; margin:0 0 10px 0;">${itemDetails}</ul>
-          <button class="btn-complete" onclick="completeOrder(${order.id})">配達完了（確認して消去）</button>
+          <div class="card-title">🚚 直近の配達予定</div>
+          <div id="homeRecentDeliveries"></div>
         </div>
-      `;
-    }).join('');
-  }
+        <div class="card">
+          <div class="card-title">🏭 直近の仕入れ予定</div>
+          <div id="homeRecentPurchases"></div>
+        </div>
+      </div>
+    </div>
 
-  // 配達完了機能
-  function completeOrder(id) {
-    if (confirm('配達を完了しますか？\n（注文が消去され、食材が在庫から引き落とされます）')) {
-      const order = state.orders.find(o => o.id === id);
-      if (order) {
-        // 在庫引落処理
-        Object.keys(order.items).forEach(p => {
-          if (state.stock[p] !== undefined) {
-            state.stock[p] -= order.items[p];
+    <!-- 2. 食品マスター (カード式表示) -->
+    <div id="tab-stock" class="tab-content">
+      <div class="card" style="border:none; background:transparent; box-shadow:none; padding:0;">
+        <div class="card-title" style="padding:0 4px 10px;">
+          <span>🥩 食品マスター・カード一覧</span>
+          <button class="btn btn-sm" onclick="openModal('modalProduct')">＋ 新規食品登録</button>
+        </div>
+        
+        <!-- カード配置コンテナ -->
+        <div class="product-grid" id="productGridContainer"></div>
+      </div>
+    </div>
+
+    <!-- 3. 配達管理タブ -->
+    <div id="tab-delivery" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>🚚 配達・徴収管理</span>
+          <button class="btn btn-sm" onclick="openModal('modalDelivery')">＋ 配達予定を作成</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>配達日時</th>
+                <th>納品先 (宛先)</th>
+                <th>注文商品・数量</th>
+                <th>徴収金額</th>
+                <th>ステータス</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="deliveryTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 仕入れ管理タブ -->
+    <div id="tab-purchase" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>🏭 仕入れ・入荷管理</span>
+          <button class="btn btn-sm" onclick="openModal('modalPurchase')">＋ 発注を追加</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>入荷予定日</th>
+                <th>仕入れ商品</th>
+                <th>発注量(KG)</th>
+                <th>ステータス</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="purchaseTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 売上・利益分析 -->
+    <div id="tab-report" class="tab-content">
+      <div class="card">
+        <div class="card-title">📈 商品別 利益比較分析</div>
+        <div style="height: 250px; position: relative;">
+          <canvas id="reportChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ナビゲーションバー -->
+    <nav class="floating-nav">
+      <button class="nav-item active" onclick="switchTab('home', this)"><span class="nav-icon">🏠</span><span>ホーム</span></button>
+      <button class="nav-item" onclick="switchTab('stock', this)"><span class="nav-icon">🥩</span><span>商品マスター</span></button>
+      <button class="nav-item" onclick="switchTab('delivery', this)"><span class="nav-icon">🚚</span><span>配達管理</span></button>
+      <button class="nav-item" onclick="switchTab('purchase', this)"><span class="nav-icon">🏭</span><span>仕入れ</span></button>
+      <button class="nav-item" onclick="switchTab('report', this)"><span class="nav-icon">📊</span><span>分析</span></button>
+    </nav>
+  </div>
+
+  <!-- モーダル: 商品追加・編集モーダル -->
+  <div class="modal-overlay" id="modalProduct">
+    <div class="modal-content">
+      <h3 id="modalProductTitle">🥩 食品マスターの編集</h3>
+      <form onsubmit="saveProduct(event)">
+        <input type="hidden" id="pId">
+        <div class="form-group"><label>商品名</label><input type="text" id="pName" required placeholder="例: 焼肉和牛"></div>
+        <div class="form-group"><label>現在庫 (KG)</label><input type="number" id="pStock" step="0.1" min="0" required value="10"></div>
+        
+        <div style="display:flex; gap:6px;">
+          <div class="form-group" style="flex:1;"><label>原価 (1KG)</label><input type="number" id="pCostKg" min="0" value="0" oninput="calcProfitPreview()"></div>
+          <div class="form-group" style="flex:1;"><label>原価単品</label><input type="number" id="pCostSingle" min="0" value="0"></div>
+        </div>
+
+        <div style="display:flex; gap:6px;">
+          <div class="form-group" style="flex:1;"><label>売価 (1KG)</label><input type="number" id="pPriceKg" min="0" value="0" oninput="calcProfitPreview()"></div>
+          <div class="form-group" style="flex:1;"><label>特殊売価 (テキスト可)</label><input type="text" id="pSpecialPrice" placeholder="例: (500g) 10,000円"></div>
+        </div>
+
+        <div style="display:flex; gap:6px;">
+          <div class="form-group" style="flex:1;"><label>天引き (手数料等)</label><input type="number" id="pDeduction" min="0" value="0" oninput="calcProfitPreview()"></div>
+          <div class="form-group" style="flex:1;"><label>算出利益 (1KGあたり)</label><input type="text" id="pProfitCalc" readonly placeholder="自動算出"></div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button type="submit" class="btn" style="flex:1;">保存する</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalProduct')" style="flex:1;">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- モーダル: 配達作成 -->
+  <div class="modal-overlay" id="modalDelivery">
+    <div class="modal-content">
+      <h3>🚚 配達予定の作成</h3>
+      <form onsubmit="saveDelivery(event)">
+        <div style="display:flex; gap:6px;">
+          <div class="form-group" style="flex:1;"><label>配達日</label><input type="date" id="dDate" required></div>
+          <div class="form-group" style="flex:1;"><label>時間帯</label><input type="time" id="dTime"></div>
+        </div>
+        <div class="form-group"><label>納品先 (店舗名・お客様名)</label><input type="text" id="dCustomer" required placeholder="例: 焼肉レストラン居酒屋〇〇店"></div>
+        
+        <div class="form-group">
+          <label>配送商品・数量</label>
+          <div id="deliveryItemInputs">
+            <div class="item-row">
+              <select class="d-prod-select" onchange="calcDeliveryTotal()" required></select>
+              <input type="number" class="d-prod-qty" step="0.1" min="0.1" value="1" style="width:80px;" onchange="calcDeliveryTotal()" required>
+              <span style="font-size:0.75rem;">KG</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm" style="margin-top:4px;" onclick="addDeliveryItemRow()">＋ 商品を追加</button>
+        </div>
+
+        <div class="form-group">
+          <label>徴収金額 (税込円)</label>
+          <input type="number" id="dCollectAmount" min="0" value="0" required>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button type="submit" class="btn" style="flex:1;">登録</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalDelivery')" style="flex:1;">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- モーダル: 仕入れ登録 -->
+  <div class="modal-overlay" id="modalPurchase">
+    <div class="modal-content">
+      <h3>🏭 仕入れ・入荷発注登録</h3>
+      <form onsubmit="savePurchase(event)">
+        <div class="form-group"><label>入荷予定日</label><input type="date" id="purDate" required></div>
+        <div class="form-group">
+          <label>対象商品</label>
+          <select id="purProdSelect" required></select>
+        </div>
+        <div class="form-group"><label>発注量 (KG)</label><input type="number" id="purQty" step="0.1" min="0.1" required value="10"></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button type="submit" class="btn" style="flex:1;">発注登録</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalPurchase')" style="flex:1;">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- 初期データ (フォーマット対応) ---
+    let products = JSON.parse(localStorage.getItem('food_products')) || [
+      { id: 'P-1', name: '焼肉和牛', stock: 15.0, costKg: 7600, costSingle: 3800, priceKg: 18000, specialPrice: '', deduction: 2000, profit: 8400 },
+      { id: 'P-2', name: '焼肉豚肉', stock: 20.0, costKg: 1250, costSingle: 3500, priceKg: 10000, specialPrice: '', deduction: 2000, profit: 4500 },
+      { id: 'P-3', name: 'カキ', stock: 10.0, costKg: 3000, costSingle: 3000, priceKg: 8000, specialPrice: '(各500g) 14,000円', deduction: 2000, profit: 9000 },
+      { id: 'P-4', name: 'ホタテ', stock: 12.0, costKg: 3000, costSingle: 3000, priceKg: 8000, specialPrice: '', deduction: 0, profit: 5000 },
+      { id: 'P-5', name: '車エビ', stock: 8.0, costKg: 7000, costSingle: 3500, priceKg: 18800, specialPrice: '(500g) 10,000円', deduction: 2000, profit: 4500 }
+    ];
+
+    let deliveries = JSON.parse(localStorage.getItem('food_deliveries')) || [
+      { id: 'DEL-1', date: '2026-08-15', time: '11:00', customer: '焼肉 築地店', items: [{ prodId: 'P-1', qty: 2.0 }], amount: 36000, isCollected: false, status: 'scheduled' }
+    ];
+
+    let purchases = JSON.parse(localStorage.getItem('food_purchases')) || [
+      { id: 'PUR-1', date: '2026-08-14', prodId: 'P-1', qty: 10, status: 'ordered' }
+    ];
+
+    let reportChartInstance = null;
+
+    function saveData() {
+      localStorage.setItem('food_products', JSON.stringify(products));
+      localStorage.setItem('food_deliveries', JSON.stringify(deliveries));
+      localStorage.setItem('food_purchases', JSON.stringify(purchases));
+      renderAll();
+    }
+
+    function switchTab(tabKey, btnElem) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabKey).classList.add('active');
+      btnElem.classList.add('active');
+      if (tabKey === 'report') renderReportChart();
+    }
+
+    function openModal(id, prodId = null) {
+      if (id === 'modalProduct') {
+        if (prodId) {
+          // 既存商品の編集
+          const p = products.find(item => item.id === prodId);
+          if (p) {
+            document.getElementById('modalProductTitle').innerText = '✏️ 食品マスターの編集';
+            document.getElementById('pId').value = p.id;
+            document.getElementById('pName').value = p.name;
+            document.getElementById('pStock').value = p.stock;
+            document.getElementById('pCostKg').value = p.costKg;
+            document.getElementById('pCostSingle').value = p.costSingle;
+            document.getElementById('pPriceKg').value = p.priceKg;
+            document.getElementById('pSpecialPrice').value = p.specialPrice || '';
+            document.getElementById('pDeduction').value = p.deduction;
+            calcProfitPreview();
           }
-        });
-
-        // 配達リストから削除
-        state.orders = state.orders.filter(o => o.id !== id);
-        saveData();
-        renderAll();
+        } else {
+          // 新規登録
+          document.getElementById('modalProductTitle').innerText = '🥩 食品の新規登録';
+          document.getElementById('pId').value = '';
+          document.getElementById('pName').value = '';
+          document.getElementById('pStock').value = '10';
+          document.getElementById('pCostKg').value = '0';
+          document.getElementById('pCostSingle').value = '0';
+          document.getElementById('pPriceKg').value = '0';
+          document.getElementById('pSpecialPrice').value = '';
+          document.getElementById('pDeduction').value = '0';
+          document.getElementById('pProfitCalc').value = '¥0';
+        }
       }
-    }
-  }
 
-  /* --- 3. 在庫画面の描画 --- */
-  function renderStock() {
-    // 手動選択セレクトボックスの更新
-    const selectEl = document.getElementById('stock-select-item');
-    selectEl.innerHTML = state.products.map(p => `<option value="${p}">${p}</option>`).join('');
-
-    // 在庫一覧カード描画
-    const listEl = document.getElementById('stock-list');
-    if (state.products.length === 0) {
-      listEl.innerHTML = '<p style="color:#64748b;">登録された商品がありません。</p>';
-      return;
+      if (id === 'modalDelivery') populateProductSelects();
+      if (id === 'modalPurchase') populatePurchaseProductSelect();
+      document.getElementById(id).style.display = 'flex';
     }
 
-    listEl.innerHTML = state.products.map(p => {
-      const qty = state.stock[p] || 0;
-      return `
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-          <strong>${p}</strong>
-          <div>
-            <span style="font-size:1.2rem; font-weight:bold; margin-right:8px;">${qty} g</span>
-            ${qty < 0 ? '<span style="color:var(--danger); font-weight:bold;">(不足)</span>' : ''}
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function calcProfitPreview() {
+      const cKg = Number(document.getElementById('pCostKg').value) || 0;
+      const pKg = Number(document.getElementById('pPriceKg').value) || 0;
+      const ded = Number(document.getElementById('pDeduction').value) || 0;
+      const profit = pKg - cKg - ded;
+      document.getElementById('pProfitCalc').value = '¥' + profit.toLocaleString();
+    }
+
+    // --- 画面描画 (カード表示対応) ---
+    function renderAll() {
+      renderDashboard();
+      renderStockCards();
+      renderDeliveryTable();
+      renderPurchaseTable();
+    }
+
+    function renderStockCards() {
+      const container = document.getElementById('productGridContainer');
+      if (!container) return;
+
+      container.innerHTML = products.map(p => {
+        const calculatedProfit = p.profit || (p.priceKg - p.costKg - p.deduction);
+        const isLowStock = p.stock <= 5.0;
+
+        return `
+          <div class="food-card">
+            <div>
+              <div class="food-card-header">
+                <div class="food-title">${p.name}</div>
+                <div class="food-stock ${isLowStock ? 'low' : ''}">
+                  在庫: ${p.stock} KG ${isLowStock ? '(少)' : ''}
+                </div>
+              </div>
+
+              <div class="food-details">
+                <div class="detail-item">
+                  <span class="detail-label">原価 (1KG)</span>
+                  <span class="detail-value">¥${Number(p.costKg).toLocaleString()}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">原価単品</span>
+                  <span class="detail-value">¥${Number(p.costSingle).toLocaleString()}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">売価 (1KG)</span>
+                  <span class="detail-value">¥${Number(p.priceKg).toLocaleString()}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">天引き</span>
+                  <span class="detail-value">¥${Number(p.deduction).toLocaleString()}</span>
+                </div>
+                <div class="detail-item" style="grid-column: span 2;">
+                  <span class="detail-label">特殊売価</span>
+                  <span class="detail-value" style="color:var(--accent-color);">${p.specialPrice || 'なし'}</span>
+                </div>
+                <div class="detail-item" style="grid-column: span 2; background:var(--soft-primary);">
+                  <span class="detail-label">1KG標準利益</span>
+                  <span class="detail-value profit">¥${Number(calculatedProfit).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="food-card-actions">
+              <button class="btn btn-sm" style="flex:1;" onclick="openModal('modalProduct', '${p.id}')">✏️ 編集</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">削除</button>
+            </div>
           </div>
+        `;
+      }).join('');
+    }
+
+    function renderDashboard() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayDeliveries = deliveries.filter(d => d.date === todayStr);
+      const uncollectedAmount = deliveries.filter(d => !d.isCollected).reduce((sum, d) => sum + Number(d.amount), 0);
+      const shortageCount = products.filter(p => p.stock <= 5.0).length;
+
+      document.getElementById('dashTodayDelivery').innerText = todayDeliveries.length + '件';
+      document.getElementById('dashUncollected').innerText = '¥' + uncollectedAmount.toLocaleString();
+      document.getElementById('dashShortageItems').innerText = shortageCount + '品目';
+      document.getElementById('dashPendingPurchases').innerText = purchases.filter(p => p.status === 'ordered').length + '件';
+
+      document.getElementById('homeRecentDeliveries').innerHTML = deliveries.slice(0, 3).map(d => `
+        <div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:0.8rem;">
+          <div><strong>${d.date} ${d.time||''}</strong> - ${d.customer}</div>
+          <div style="color:var(--light-text);">徴収予定: ¥${Number(d.amount).toLocaleString()} (${d.isCollected?'徴収済':'未徴収'})</div>
         </div>
-      `;
-    }).join('');
-  }
+      `).join('') || '<div style="font-size:0.8rem; color:var(--light-text);">配達予定はありません</div>';
 
-  function updateStockDirect() {
-    const item = document.getElementById('stock-select-item').value;
-    const qty = parseInt(document.getElementById('stock-input-qty').value, 10);
-
-    if (!item || isNaN(qty)) {
-      alert('数量を正しく入力してください');
-      return;
+      document.getElementById('homeRecentPurchases').innerHTML = purchases.slice(0, 3).map(p => {
+        const prod = products.find(prd => prd.id === p.prodId);
+        return `
+          <div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:0.8rem;">
+            <div><strong>${p.date}</strong> - ${prod ? prod.name : ''} (${p.qty} KG)</div>
+            <div>状態: ${p.status === 'ordered' ? '<span class="badge badge-danger">入荷待ち</span>' : '<span class="badge badge-success">入荷済</span>'}</div>
+          </div>`;
+      }).join('') || '<div style="font-size:0.8rem; color:var(--light-text);">仕入れ予定はありません</div>';
     }
 
-    state.stock[item] = qty;
-    saveData();
-    renderAll();
-    document.getElementById('stock-input-qty').value = '';
-  }
+    function renderDeliveryTable() {
+      const tbody = document.getElementById('deliveryTableBody');
+      tbody.innerHTML = deliveries.map(d => {
+        const itemSummary = d.items.map(i => {
+          const prd = products.find(p => p.id === i.prodId);
+          return `${prd ? prd.name : ''} × ${i.qty}KG`;
+        }).join(', ');
 
-  /* --- 4. 設定画面の描画 --- */
-  function renderSettings() {
-    // 場所タグ一覧
-    const locTagBox = document.getElementById('location-tag-list');
-    locTagBox.innerHTML = state.locations.map(loc => `
-      <div class="tag-item">
-        <span>📍 ${loc}</span>
-        <button class="btn-danger" onclick="removeLocation('${loc}')">✕</button>
-      </div>
-    `).join('');
-
-    // 商品タグ一覧
-    const prodTagBox = document.getElementById('product-tag-list');
-    prodTagBox.innerHTML = state.products.map(p => `
-      <div class="tag-item">
-        <span>🥩 ${p}</span>
-        <button class="btn-danger" onclick="removeProduct('${p}')">✕</button>
-      </div>
-    `).join('');
-  }
-
-  function addLocation() {
-    const input = document.getElementById('new-location-input');
-    const val = input.value.trim();
-    if (val && !state.locations.includes(val)) {
-      state.locations.push(val);
-      saveData();
-      resetOrderSelection();
-      renderAll();
-      input.value = '';
+        return `
+          <tr>
+            <td>${d.date} ${d.time||''}</td>
+            <td class="text-left"><strong>${d.customer}</strong></td>
+            <td class="text-left">${itemSummary}</td>
+            <td>¥${Number(d.amount).toLocaleString()}<br>
+              <button class="btn btn-sm ${d.isCollected ? 'btn-success' : ''}" onclick="toggleCollected('${d.id}')">
+                ${d.isCollected ? '徴収済み' : '未徴収 (タップで変更)'}
+              </button>
+            </td>
+            <td>
+              ${d.status === 'scheduled' 
+                ? `<button class="btn btn-sm btn-success" onclick="completeDelivery('${d.id}')">配達完了にする</button>` 
+                : '<span class="badge badge-success">配達完了</span>'}
+            </td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteDelivery('${d.id}')">削除</button></td>
+          </tr>`;
+      }).join('');
     }
-  }
 
-  function removeLocation(loc) {
-    if (confirm(`「${loc}」を配達場所リストから削除しますか？`)) {
-      state.locations = state.locations.filter(l => l !== loc);
-      saveData();
-      resetOrderSelection();
-      renderAll();
+    function renderPurchaseTable() {
+      const tbody = document.getElementById('purchaseTableBody');
+      tbody.innerHTML = purchases.map(p => {
+        const prod = products.find(prd => prd.id === p.prodId);
+        return `
+          <tr>
+            <td>${p.date}</td>
+            <td class="text-left">${prod ? prod.name : '不明な商品'}</td>
+            <td>${p.qty} KG</td>
+            <td>${p.status === 'ordered' ? '<span class="badge badge-danger">入荷待ち</span>' : '<span class="badge badge-success">入荷完了</span>'}</td>
+            <td>
+              ${p.status === 'ordered' 
+                ? `<button class="btn btn-sm btn-success" onclick="receivePurchase('${p.id}')">入荷処理 (在庫へ加算)</button>` 
+                : '完了'}
+            </td>
+          </tr>`;
+      }).join('');
     }
-  }
 
-  function addProduct() {
-    const input = document.getElementById('new-product-input');
-    const val = input.value.trim();
-    if (val && !state.products.includes(val)) {
-      state.products.push(val);
-      if (state.stock[val] === undefined) {
-        state.stock[val] = 0; // 初期在庫0gで追加
+    // --- ロジック処理 (新規保存・更新の共通化) ---
+    function saveProduct(e) {
+      e.preventDefault();
+      const pId = document.getElementById('pId').value;
+      const cKg = Number(document.getElementById('pCostKg').value) || 0;
+      const pKg = Number(document.getElementById('pPriceKg').value) || 0;
+      const ded = Number(document.getElementById('pDeduction').value) || 0;
+
+      if (pId) {
+        // 既存商品の更新（編集）
+        const p = products.find(item => item.id === pId);
+        if (p) {
+          p.name = document.getElementById('pName').value;
+          p.stock = Number(document.getElementById('pStock').value);
+          p.costKg = cKg;
+          p.costSingle = Number(document.getElementById('pCostSingle').value) || 0;
+          p.priceKg = pKg;
+          p.specialPrice = document.getElementById('pSpecialPrice').value;
+          p.deduction = ded;
+          p.profit = pKg - cKg - ded;
+        }
+      } else {
+        // 新規商品の登録
+        products.push({
+          id: 'P-' + Date.now(),
+          name: document.getElementById('pName').value,
+          stock: Number(document.getElementById('pStock').value),
+          costKg: cKg,
+          costSingle: Number(document.getElementById('pCostSingle').value) || 0,
+          priceKg: pKg,
+          specialPrice: document.getElementById('pSpecialPrice').value,
+          deduction: ded,
+          profit: pKg - cKg - ded
+        });
       }
+
       saveData();
-      resetOrderSelection();
-      renderAll();
-      input.value = '';
+      closeModal('modalProduct');
     }
-  }
 
-  function removeProduct(product) {
-    if (confirm(`「${product}」を商品マスターから削除しますか？`)) {
-      state.products = state.products.filter(p => p !== product);
-      delete state.stock[product];
+    function deleteProduct(id) {
+      if (confirm('この食品データを削除しますか？')) {
+        products = products.filter(p => p.id !== id);
+        saveData();
+      }
+    }
+
+    function populateProductSelects() {
+      const options = products.map(p => `<option value="${p.id}" data-price="${p.priceKg}">${p.name} (在庫:${p.stock}KG)</option>`).join('');
+      document.querySelectorAll('.d-prod-select').forEach(select => select.innerHTML = options);
+      calcDeliveryTotal();
+    }
+
+    function addDeliveryItemRow() {
+      const container = document.getElementById('deliveryItemInputs');
+      const div = document.createElement('div');
+      div.className = 'item-row';
+      div.innerHTML = `
+        <select class="d-prod-select" onchange="calcDeliveryTotal()" required>${products.map(p => `<option value="${p.id}" data-price="${p.priceKg}">${p.name} (在庫:${p.stock}KG)</option>`).join('')}</select>
+        <input type="number" class="d-prod-qty" step="0.1" min="0.1" value="1" style="width:80px;" onchange="calcDeliveryTotal()" required>
+        <span style="font-size:0.75rem;">KG</span>
+      `;
+      container.appendChild(div);
+      calcDeliveryTotal();
+    }
+
+    function calcDeliveryTotal() {
+      let total = 0;
+      const selects = document.querySelectorAll('.d-prod-select');
+      const qtys = document.querySelectorAll('.d-prod-qty');
+      selects.forEach((sel, i) => {
+        const opt = sel.options[sel.selectedIndex];
+        if (opt) {
+          const price = Number(opt.getAttribute('data-price')) || 0;
+          const qty = Number(qtys[i].value) || 0;
+          total += price * qty;
+        }
+      });
+      document.getElementById('dCollectAmount').value = total;
+    }
+
+    function saveDelivery(e) {
+      e.preventDefault();
+      const selects = document.querySelectorAll('.d-prod-select');
+      const qtys = document.querySelectorAll('.d-prod-qty');
+      const items = [];
+      selects.forEach((sel, i) => {
+        items.push({ prodId: sel.value, qty: Number(qtys[i].value) });
+      });
+
+      deliveries.push({
+        id: 'DEL-' + Date.now(),
+        date: document.getElementById('dDate').value,
+        time: document.getElementById('dTime').value,
+        customer: document.getElementById('dCustomer').value,
+        items,
+        amount: Number(document.getElementById('dCollectAmount').value),
+        isCollected: false,
+        status: 'scheduled'
+      });
       saveData();
-      resetOrderSelection();
-      renderAll();
+      closeModal('modalDelivery');
     }
-  }
 
-  /* --- タブ切替機能 --- */
-  function switchTab(tabId, btnElement) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    function toggleCollected(id) {
+      const d = deliveries.find(item => item.id === id);
+      if (d) { d.isCollected = !d.isCollected; saveData(); }
+    }
 
-    document.getElementById(tabId).classList.add('active');
-    btnElement.classList.add('active');
-  }
+    function completeDelivery(id) {
+      const d = deliveries.find(item => item.id === id);
+      if (!d || d.status === 'completed') return;
 
-  // アプリ起動
-  init();
-</script>
+      d.items.forEach(item => {
+        const prod = products.find(p => p.id === item.prodId);
+        if (prod) {
+          prod.stock = Math.max(0, prod.stock - Number(item.qty));
+        }
+      });
 
+      d.status = 'completed';
+      d.isCollected = true;
+      saveData();
+      alert('配達完了処理を行い、在庫(KG)をマイナス引き落としました！');
+    }
+
+    function deleteDelivery(id) {
+      if (confirm('配達予定を削除しますか？')) {
+        deliveries = deliveries.filter(d => d.id !== id);
+        saveData();
+      }
+    }
+
+    function populatePurchaseProductSelect() {
+      document.getElementById('purProdSelect').innerHTML = products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    }
+
+    function savePurchase(e) {
+      e.preventDefault();
+      purchases.push({
+        id: 'PUR-' + Date.now(),
+        date: document.getElementById('purDate').value,
+        prodId: document.getElementById('purProdSelect').value,
+        qty: Number(document.getElementById('purQty').value),
+        status: 'ordered'
+      });
+      saveData();
+      closeModal('modalPurchase');
+    }
+
+    function receivePurchase(id) {
+      const pur = purchases.find(p => p.id === id);
+      if (!pur || pur.status === 'received') return;
+
+      const prod = products.find(p => p.id === pur.prodId);
+      if (prod) {
+        prod.stock += Number(pur.qty);
+      }
+      pur.status = 'received';
+      saveData();
+      alert(`入荷完了！「${prod ? prod.name : ''}」の在庫に +${pur.qty} KGを加算しました。`);
+    }
+
+    function renderReportChart() {
+      const ctx = document.getElementById('reportChart').getContext('2d');
+      if (reportChartInstance) reportChartInstance.destroy();
+
+      const labels = products.map(p => p.name);
+      const profitData = products.map(p => p.profit || (p.priceKg - p.costKg - p.deduction));
+
+      reportChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '1KGあたりの標準利益 (円)',
+            data: profitData,
+            backgroundColor: '#38a169'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+
+    // 初期化設定
+    document.getElementById('dDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('purDate').value = new Date().toISOString().split('T')[0];
+    renderAll();
+  </script>
 </body>
 </html>
